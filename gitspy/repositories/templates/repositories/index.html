@@ -1,0 +1,72 @@
+{% extends 'repositories/base.html' %}
+{% load convert_str_date %}  
+{% block content %}
+<h1>Murilo repositories</h1>
+<p>Type something in the input field a repository by name or description:</p>
+<input
+  class="form-control col-sm"
+  id="searchInput"
+  type="text"
+  placeholder="Search..."/>
+<br />
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col" style="cursor: pointer;">Name</th>
+      <th scope="col" style="cursor: pointer;">Description</th>
+      <th scope="col" style="cursor: pointer;">Languages</th>
+      <th scope="col" style="cursor: pointer;">Last Push</th>
+    </tr>
+  </thead>
+  <tbody id="repoTable">
+    {% for item in data %}
+    <tr>
+      <td>{{item.name}}</td>
+      <td>{{item.description}}</td>
+      <td>
+        {% for language in item.languages.nodes %}
+            {% if language.name == 'JavaScript' %}
+                <span class="badge" style="background-color:{{language.color}}; color: Black">
+            {{ language.name }}</span>
+            {% else %}
+                <span class="badge" style="background-color:{{language.color}}">
+                {{ language.name }}</span>
+            {% endif %}
+        {% endfor %}
+      </td>
+      <td>{{item.pushedAt|convert_str_date}}</td>
+      {% endfor %}
+    </tr>
+
+    <tr></tr>
+  </tbody>
+</table>
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script>
+  $(document).ready(function () {
+    $("#searchInput").on("keyup", function () {
+      var value = $(this).val().toLowerCase();
+      $("#repoTable tr").filter(function () {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+      });
+    });
+  });
+</script>
+<script>
+  $('th').click(function(){
+    var table = $(this).parents('table').eq(0)
+    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+    this.asc = !this.asc
+    if (!this.asc){rows = rows.reverse()}
+      for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+  })
+  function comparer(index) {
+      return function(a, b) {
+          var valA = getCellValue(a, index), valB = getCellValue(b, index)
+          return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+      }
+  }
+  function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
+</script>
+
+{% endblock %}
